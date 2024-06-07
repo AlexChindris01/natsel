@@ -1,19 +1,12 @@
 package genalg.back;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class Controller {
-
-	private static final String template = "Hello %s!";
-	public static int sense = 1;
 	Animal[] gen = new Animal[5];
 	String stringGen;
 	static boolean startedEvolution = false;
-	private final AtomicLong counter = new AtomicLong();
-
 
 	@CrossOrigin(origins = "http://localhost:5173")
 	@GetMapping("/load")

@@ -7,7 +7,7 @@ public class Controller {
 	Animal[] gen = new Animal[5];
 	String stringGen;
 	static boolean startedEvolution = false;
-
+	String template = "Current population (sight, speed, size):";
 	@CrossOrigin(origins = "http://localhost:5173")
 	@GetMapping("/load")
 	public String load () {
@@ -20,7 +20,7 @@ public class Controller {
 			stringGen += gen[i].getSpeed() + " ";
 			stringGen += gen[i].getSize() + " | ";
 		}
-		return "Current population:\n" + stringGen;
+		return template + stringGen;
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")
@@ -37,7 +37,7 @@ public class Controller {
 			stringGen += gen[i].getSpeed() + " ";
 			stringGen += gen[i].getSize() + " | ";
 		}
-		return "Current population:" + stringGen;
+		return template + stringGen;
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")
@@ -54,8 +54,8 @@ public class Controller {
 				stringGen += gen[i].getSpeed() + " ";
 				stringGen += gen[i].getSize() + " | ";
 			}
-			return "Current population: " + stringGen;
+			return template + stringGen;
 		}
-		else return "Current population: " + stringGen + " Start evolution first";
+		else return "";
 	}
 }

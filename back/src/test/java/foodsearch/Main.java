@@ -1,5 +1,5 @@
 package foodsearch;
-
+import com.google.gson.*;
 
 class Sim {
     void world(int maxGen, int maxSteps) {
@@ -23,5 +23,7 @@ public class Main {
         Animal anAnimal = new Animal();
         anAnimal.search();
         System.out.println(anAnimal.location.x + " " + anAnimal.location.y + " " + anAnimal.foodEaten);
+        String json = new Gson().toJson(anAnimal.searchPath);
+        System.out.println("Json: \n" + json);
     }
 }

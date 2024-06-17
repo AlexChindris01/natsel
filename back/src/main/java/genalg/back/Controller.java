@@ -24,6 +24,12 @@ public class Controller {
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")
+	@GetMapping("/sketchtest")
+	public String sketchtest() {
+		return "50";
+	}
+
+	@CrossOrigin(origins = "http://localhost:5173")
 	@GetMapping("/start")
 	public String start () {
 		startedEvolution = true;

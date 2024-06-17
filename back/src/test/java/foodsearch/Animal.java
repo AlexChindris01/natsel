@@ -8,12 +8,12 @@ import java.lang.Math.*;
 import static java.lang.Math.PI;
 
 class TimedLocation extends Point {
-    double time; // time needed to reach this location from the previous one.
+    double moveTime; // time needed to reach this location from the previous one.
     // from 0 to 1? (1 would mean the time required for a full step). consider that different animals
     // may have different speeds
-    public TimedLocation(double x, double y, double time) {
+    public TimedLocation(double x, double y, double moveTime) {
         super(x, y);
-        this.time = time;
+        this.moveTime = moveTime;
     }
 }
 
@@ -55,11 +55,13 @@ class Animal {
             double ratio = speed / CustomMath.dist(location, chasedFood);
             if (ratio >= 1) {
                 location = chasedFood;
-                searchPath.add(new TimedLocation(location.x, location.y, 1)); // should be changed, maybe try
-                // to change it so that animals don't slow down and don't take breaks
+                time = 1 / ratio;
+                searchPath.add(new TimedLocation(location.x, location.y, time));
+                System.out.println("Added to search path: " + location.x + " " + location.y + " " + time);
+                searchPath.add(new TimedLocation(location.x, location.y, 1 - time));
                 foodEaten++;
-                testFood.x += 10;
-                testFood.y += 10;
+                testFood.x += 15;
+                testFood.y += 15;
                 chasedFood = null;
                 // to implement: make the food item disappear etc
             }
@@ -89,23 +91,23 @@ class Animal {
                 time = CustomMath.dist(location, foodDetectionPoint) / speed;
                 location.copy(foodDetectionPoint);
                 searchPath.add(new TimedLocation(location.x, location.y, time));
-                time = 1 - time;
                 double stepRemainder = CustomMath.dist(foodDetectionPoint, step);
                 double ratio = stepRemainder / sight;
                 if (ratio >= 1) {
                     location.copy(testFood);
-                    searchPath.add(new TimedLocation(location.x, location.y, time)); // time should be adjusted
-                    // here to make animals move without breaks or slowing down
+                    searchPath.add(new TimedLocation(location.x, location.y, sight / speed));
+                    searchPath.add(new TimedLocation(location.x, location.y, 1 - time - sight / speed));
                     foodEaten++;
-                    testFood.x += 10;
-                    testFood.y += 10;
+                    testFood.x += 15;
+                    testFood.y += 15;
                     // to implement: make the food item disappear etc
                 }
                 else {
                     chasedFood = new Point(testFood.x, testFood.y);
                     location.x += ratio * (testFood.x - location.x);
                     location.y += ratio * (testFood.y - location.y);
-                    searchPath.add(new TimedLocation(location.x, location.y, time));
+                    searchPath.add(new TimedLocation(location.x, location.y, 1 - time));
+                    // System.out.println("added to search path: " + location.x + " " + location.y + " " + time);
                 }
             }
         }
@@ -118,7 +120,7 @@ class Animal {
         }
         System.out.println("Search path:");
         for (i = 0; i < searchPath.size(); i++) {
-            System.out.println(searchPath.get(i).x + " " + searchPath.get(i).y + " " + searchPath.get(i).time);
+            System.out.println(searchPath.get(i).x + " " + searchPath.get(i).y + " " + searchPath.get(i).moveTime);
         }
     }
 }

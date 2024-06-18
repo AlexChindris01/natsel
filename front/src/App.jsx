@@ -13,10 +13,16 @@ function sketch(p5) {
   let duration;  // 5 seconds at 60 frames per second
   let currentFrame;
   let i;
+  let j;
+  let k;
   // let testMsg;
   // let testMsgInt;
   let path;
+  let foodPath;
   let jsonStr;
+  let foodJsonStr;
+  const CANVAS_X = 500;
+  const CANVAS_Y = 500;
   p5.setup = () => {
     // fetch('http://localhost:8080/sketchtest')
     // .then(response => response.text())
@@ -25,24 +31,39 @@ function sketch(p5) {
     //     testMsgInt = Number(testMsg);
     // })
     // .catch(error => console.error('Error:', error));
-    jsonStr = '[{"moveTime":1.0,"x":6.380567179186369,"y":4.825801743947808},{"moveTime":0.2099747127033977,"x":7.8831212825723815,"y":4.074768132989005},{"moveTime":0.625,"x":3.0,"y":3.0},{"moveTime":0.16502528729660226,"x":3.0,"y":3.0},{"moveTime":1.0,"x":10.70264854413496,"y":0.8391655765571526},{"moveTime":1.0,"x":18.309836661156847,"y":3.315188385870704},{"moveTime":1.0,"x":21.629889900350822,"y":10.593735389834999},{"moveTime":1.0,"x":25.544044238361863,"y":17.570797509253843},{"moveTime":1.0,"x":33.13669921579386,"y":15.050561331099678},{"moveTime":1.0,"x":40.343342336081946,"y":11.577191938592684},{"moveTime":1.0,"x":43.25549660586431,"y":4.126060648044358},{"moveTime":1.0,"x":51.19285104449212,"y":5.125262587391626},{"moveTime":1.0,"x":52.00161263484865,"y":13.084276640021763},{"moveTime":1.0,"x":45.5876439008508,"y":17.865594981159287},{"moveTime":1.0,"x":37.792630202566386,"y":19.664973052482374},{"moveTime":1.0,"x":35.15122468957602,"y":27.216329017866613},{"moveTime":1.0,"x":36.3939008403018,"y":35.11922443564973},{"moveTime":1.0,"x":43.32558560560026,"y":39.11318817040361},{"moveTime":1.0,"x":50.50949203128556,"y":42.6333427787976},{"moveTime":1.0,"x":53.00159301583005,"y":50.23527889289593},{"moveTime":1.0,"x":46.507844742751224,"y":54.90766943370967},{"moveTime":1.0,"x":39.54209961710497,"y":58.84192855640805}]\n'
-    p5.createCanvas(720, 400, p5.WEBGL);
+    jsonStr = '[{"moveTime":1.0,"x":1.8116884180305028,"y":23.93152283236431},{"moveTime":1.0,"x":25.72474093564794,"y":25.97258120724495},{"moveTime":0.3282229467866669,"x":33.57813544609149,"y":26.586461549488696},{"moveTime":0.625,"x":48.57453608088813,"y":26.25787670402119},{"moveTime":0.04677705321333314,"x":48.57453608088813,"y":26.25787670402119},{"moveTime":1.0,"x":61.83958731493599,"y":6.256916333126863},{"moveTime":1.0,"x":85.81238114557712,"y":7.399350555992544},{"moveTime":1.0,"x":108.18807778771058,"y":16.078532532378183},{"moveTime":1.0,"x":118.45068608512551,"y":37.77366726193979},{"moveTime":1.0,"x":137.83173947817363,"y":51.92904678266679},{"moveTime":1.0,"x":152.78297775814502,"y":70.70297748179098},{"moveTime":1.0,"x":138.65380738964532,"y":90.10314615883888},{"moveTime":1.0,"x":115.32733775215642,"y":84.45727915267334},{"moveTime":1.0,"x":99.01112494242392,"y":102.05788140224199},{"moveTime":1.0,"x":75.42453045720912,"y":106.49325743929165},{"moveTime":1.0,"x":52.60251987290698,"y":113.91995474630515},{"moveTime":1.0,"x":31.7486971825713,"y":102.04064166851985},{"moveTime":1.0,"x":13.177511699486711,"y":86.83830402745727},{"moveTime":1.0,"x":8.727404474845514,"y":63.254484453664816},{"moveTime":1.0,"x":28.380625948704683,"y":49.479474990893436},{"moveTime":1.0,"x":40.03830259094233,"y":28.50094846243995},{"moveTime":1.0,"x":53.026418005250534,"y":8.319054151335017}]';
+    foodJsonStr = '[{"x":166.6860732776861,"y":93.13856831808498},{"x":235.80497360920822,"y":400.6536954289949},{"x":86.21023071886263,"y":480.8787658918618},{"x":8.301831401019422,"y":256.2028158090152},{"x":278.5135194931748,"y":169.40782314340163},{"x":233.0810885884157,"y":75.942057502347},{"x":155.92833795870936,"y":306.6789161608015},{"x":432.4549544215416,"y":156.19596614526893},{"x":386.3445227283502,"y":166.55501784591138},{"x":48.57453608088813,"y":26.25787670402119}]';
+    p5.createCanvas(CANVAS_X, CANVAS_Y, p5.WEBGL);
     path = JSON.parse(jsonStr);
-    duration = path[0].moveTime * 30;
+    foodPath = JSON.parse(foodJsonStr);
+    duration = path[1].moveTime * 75;
     currentFrame = 0;
     i = 0;
+    for (k = 0; k < path.length; k++) {
+        path[k].x -= CANVAS_X / 2;
+        path[k].y -= CANVAS_Y / 2;
+    }
+    for (k = 0; k < foodPath.length; k++) {
+        foodPath[k].x -= CANVAS_X / 2;
+        foodPath[k].y -= CANVAS_Y / 2;
+    }
   }
 
   p5.draw = () => {
     let x;
     let y;
     p5.background(255); // Clear the canvas with a white background
+    p5.fill('rgb(0, 255, 0)');
+    for (j = 0; j < foodPath.length; j++) {
+        p5.ellipse(foodPath[j].x, foodPath[j].y, 5, 5);
+      }
     p5.fill(0);
 
     // Calculate the current position of the dot
     x = p5.lerp(path[i].x, path[i + 1].x, currentFrame / duration);
     y = p5.lerp(path[i].y, path[i + 1].y, currentFrame / duration);
-    // Draw the dot
+
+
     p5.ellipse(x, y, 10, 10);
 
     // Update the frame counter
@@ -50,9 +71,14 @@ function sketch(p5) {
       currentFrame++;
     }
     else {
+        for (k = 0; k < foodPath.length; k++) {
+            if (x === foodPath[k].x && y === foodPath[k].y) {
+                foodPath.splice(k, 1);
+            }
+        }
         currentFrame = 0;
         i++;
-        duration = path[i].moveTime * 30;
+        duration = path[i + 1].moveTime * 75;
     }
   };
 }
@@ -129,8 +155,9 @@ function App() {
               <button onClick={reducefood}>Reduce amount of food</button>
               <div id="response">{population}</div>
               <div id="startWarning">{startWarning}</div>
-              <ReactP5Wrapper sketch={sketch}/>
-
+              <div className="sketch-div">
+                  <ReactP5Wrapper sketch={sketch}/>
+              </div>
           </div>
       );
   }

@@ -27,6 +27,8 @@ class Animal {
     int energy;
     int foodEaten;
     Point chasedFood;
+    Point contestedFood;
+    double timeReachedFoodLocation; // time between starting the latest searchStep and reaching the location of food
     static List<Point> foodList;
     public static final int MIN_COORD = 0;
     public static final int MAX_COORD = 500;
@@ -51,6 +53,8 @@ class Animal {
         searchPath = new ArrayList<TimedLocation>();
     }
     void searchStep() {
+        timeReachedFoodLocation = -1;
+        contestedFood = null;
         double time = 0;
         if (chasedFood != null) {
             double ratio = speed / CustomMath.dist(location, chasedFood);
@@ -58,10 +62,12 @@ class Animal {
                 location = chasedFood;
                 time = 1 / ratio;
                 searchPath.add(new TimedLocation(location.x, location.y, time));
-                System.out.println("Added to search path: " + location.x + " " + location.y + " " + time);
+                // System.out.println("Added to search path: " + location.x + " " + location.y + " " + time);
                 searchPath.add(new TimedLocation(location.x, location.y, 1 - time));
-                foodEaten++;
-                foodList.remove(chasedFood);
+                timeReachedFoodLocation = time;
+                contestedFood = location;
+                // foodEaten++;
+                // foodList.remove(chasedFood);
                 chasedFood = null;
                 // to implement: make the food item disappear etc
             }
@@ -111,8 +117,10 @@ class Animal {
                     location.copy(chasedFood);
                     searchPath.add(new TimedLocation(location.x, location.y, sight / speed));
                     searchPath.add(new TimedLocation(location.x, location.y, 1 - time - sight / speed));
-                    foodEaten++;
-                    foodList.remove(chasedFood);
+                    timeReachedFoodLocation = time + sight / speed;
+                    contestedFood = location;
+                    // foodEaten++;
+                    // foodList.remove(chasedFood);
                     chasedFood = null; // to replace with awarding the food to the first animal that gets to it
 
                     // to implement: make the food item disappear etc

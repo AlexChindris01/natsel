@@ -23,20 +23,65 @@ class Sim {
 
 public class Main {
     public static void main(String[] args) {
-        Animal anAnimal = new Animal();
+//        Animal anAnimal = new Animal();
+//        Animal.foodList = new ArrayList<Point>();
+//        int i;
+//        Random rand = new Random();
+//        for (i = 0; i < 10; i++) {
+//            Animal.foodList.add(new Point(Animal.MAX_COORD * rand.nextDouble(), Animal.MAX_COORD * rand.nextDouble()));
+//        }
+//        String foodListJson = new Gson().toJson(Animal.foodList);
+//        System.out.println("Initial food list json: \n" + foodListJson);
+//        anAnimal.search();
+//        System.out.println(anAnimal.location.x + " " + anAnimal.location.y + " " + anAnimal.foodEaten);
+//        String searchPathJson = new Gson().toJson(anAnimal.searchPath);
+//        foodListJson = new Gson().toJson(Animal.foodList);
+//        System.out.println("search path json: \n" + searchPathJson);
+//        System.out.println("Final food list json: \n" + foodListJson);
+        Animal[] animals = new Animal[10];
         Animal.foodList = new ArrayList<Point>();
-        int i;
         Random rand = new Random();
-        for (i = 0; i < 10; i++) {
+        int i, j, k, energy = 20, startingFoodQuantity = 20, currentWinner;
+        double currentWinningTime;
+        for (i = 0; i < animals.length; i++) {
+            animals[i] = new Animal();
+        }
+        for (i = 0; i < startingFoodQuantity; i++) {
             Animal.foodList.add(new Point(Animal.MAX_COORD * rand.nextDouble(), Animal.MAX_COORD * rand.nextDouble()));
         }
         String foodListJson = new Gson().toJson(Animal.foodList);
         System.out.println("Initial food list json: \n" + foodListJson);
-        anAnimal.search();
-        System.out.println(anAnimal.location.x + " " + anAnimal.location.y + " " + anAnimal.foodEaten);
-        String searchPathJson = new Gson().toJson(anAnimal.searchPath);
-        foodListJson = new Gson().toJson(Animal.foodList);
-        System.out.println("search path json: \n" + searchPathJson);
-        System.out.println("Final food list json: \n" + foodListJson);
+        for (i = 0; i < energy; i++) {
+            for (j = 0; j < animals.length; j++) {
+                animals[j].searchStep();
+            }
+            for (j = 0; j < Animal.foodList.size(); j++) {
+                currentWinningTime = 2;
+                currentWinner = -1;
+                for (k = 0; k < animals.length; k++) {
+                    if (animals[k].contestedFood != null) {
+                        if (Animal.foodList.get(j).x == animals[k].contestedFood.x &&
+                            Animal.foodList.get(j).y == animals[k].contestedFood.y &&
+                            animals[k].timeReachedFoodLocation < currentWinningTime) {
+                                currentWinner = k;
+                                currentWinningTime = animals[k].timeReachedFoodLocation;
+                        }
+                    }
+                }
+                if (currentWinner != -1) {
+                    animals[currentWinner].foodEaten++;
+                    Animal.foodList.remove(j);
+                    j--;
+                }
+            }
+        }
+        List<List<TimedLocation>> searchPaths;
+        searchPaths = new ArrayList<>();
+        for (i = 0; i < animals.length; i++) {
+            // System.out.println("Search path " + i + ":\n" + new Gson().toJson(animals[i].searchPath));
+            searchPaths.add(animals[i].searchPath);
+        }
+        String searchPathsJson = new Gson().toJson(searchPaths);
+        System.out.println("Search paths json: \n" + searchPathsJson);
     }
 }

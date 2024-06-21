@@ -83,5 +83,8 @@ public class Main {
         }
         String searchPathsJson = new Gson().toJson(searchPaths);
         System.out.println("Search paths json: \n" + searchPathsJson);
+        for (i = 0; i < animals.length; i++) {
+            System.out.println("food eaten by " + i + ": " + animals[i].foodEaten);
+        }
     }
 }

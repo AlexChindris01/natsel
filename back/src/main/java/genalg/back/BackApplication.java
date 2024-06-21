@@ -13,7 +13,7 @@ public class BackApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/start-javaconfig").allowedOrigins("http://localhost:5173");
+				registry.addMapping("/evolve-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/reducefood-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/load-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/sketchtest-javaconfig").allowedOrigins("http://localhost:5173");

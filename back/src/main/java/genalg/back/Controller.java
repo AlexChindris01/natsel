@@ -30,10 +30,10 @@ public class Controller {
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")
-	@GetMapping("/start")
-	public String start () {
+	@GetMapping("/evolve")
+	public String evolve () {
 		startedEvolution = true;
-		System.out.println("==== starting evolution ====");
+		System.out.println("==== evolving ====");
 		int i;
 		gen = new Animal[5];
 		stringGen = "";

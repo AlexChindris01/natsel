@@ -38,13 +38,13 @@ public class Main {
 //        foodListJson = new Gson().toJson(Animal.foodList);
 //        System.out.println("search path json: \n" + searchPathJson);
 //        System.out.println("Final food list json: \n" + foodListJson);
-        Animal[] animals = new Animal[10];
+        Animal[] gen = new Animal[10];
         Animal.foodList = new ArrayList<Point>();
         Random rand = new Random();
         int i, j, k, energy = 20, startingFoodQuantity = 20, currentWinner;
         double currentWinningTime;
-        for (i = 0; i < animals.length; i++) {
-            animals[i] = new Animal();
+        for (i = 0; i < gen.length; i++) {
+            gen[i] = new Animal();
         }
         for (i = 0; i < startingFoodQuantity; i++) {
             Animal.foodList.add(new Point(Animal.MAX_COORD * rand.nextDouble(), Animal.MAX_COORD * rand.nextDouble()));
@@ -52,24 +52,24 @@ public class Main {
         String foodListJson = new Gson().toJson(Animal.foodList);
         System.out.println("Initial food list json: \n" + foodListJson);
         for (i = 0; i < energy; i++) {
-            for (j = 0; j < animals.length; j++) {
-                animals[j].searchStep();
+            for (j = 0; j < gen.length; j++) {
+                gen[j].searchStep();
             }
             for (j = 0; j < Animal.foodList.size(); j++) {
                 currentWinningTime = 2;
                 currentWinner = -1;
-                for (k = 0; k < animals.length; k++) {
-                    if (animals[k].contestedFood != null) {
-                        if (Animal.foodList.get(j).x == animals[k].contestedFood.x &&
-                            Animal.foodList.get(j).y == animals[k].contestedFood.y &&
-                            animals[k].timeReachedFoodLocation < currentWinningTime) {
+                for (k = 0; k < gen.length; k++) {
+                    if (gen[k].contestedFood != null) {
+                        if (Animal.foodList.get(j).x == gen[k].contestedFood.x &&
+                            Animal.foodList.get(j).y == gen[k].contestedFood.y &&
+                            gen[k].timeReachedFoodLocation < currentWinningTime) {
                                 currentWinner = k;
-                                currentWinningTime = animals[k].timeReachedFoodLocation;
+                                currentWinningTime = gen[k].timeReachedFoodLocation;
                         }
                     }
                 }
                 if (currentWinner != -1) {
-                    animals[currentWinner].foodEaten++;
+                    gen[currentWinner].foodEaten++;
                     Animal.foodList.remove(j);
                     j--;
                 }
@@ -77,14 +77,14 @@ public class Main {
         }
         List<List<TimedLocation>> searchPaths;
         searchPaths = new ArrayList<>();
-        for (i = 0; i < animals.length; i++) {
+        for (i = 0; i < gen.length; i++) {
             // System.out.println("Search path " + i + ":\n" + new Gson().toJson(animals[i].searchPath));
-            searchPaths.add(animals[i].searchPath);
+            searchPaths.add(gen[i].searchPath);
         }
         String searchPathsJson = new Gson().toJson(searchPaths);
         System.out.println("Search paths json: \n" + searchPathsJson);
-        for (i = 0; i < animals.length; i++) {
-            System.out.println("food eaten by " + i + ": " + animals[i].foodEaten);
+        for (i = 0; i < gen.length; i++) {
+            System.out.println("food eaten by " + i + ": " + gen[i].foodEaten);
         }
     }
 }

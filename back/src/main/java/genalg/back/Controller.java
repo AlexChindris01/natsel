@@ -74,6 +74,7 @@ public class Controller {
             for (j = 0; j < gen.length; j++) {
                 gen[j].searchStep();
             }
+
             for (j = 0; j < Animal.foodList.size(); j++) {
                 currentWinningTime = 2;
                 currentWinner = -1;
@@ -93,6 +94,7 @@ public class Controller {
                     j--;
                 }
             }
+
         }
         List<List<TimedLocation>> searchPaths;
         searchPaths = new ArrayList<>();
@@ -130,7 +132,7 @@ public class Controller {
 			}
 		}
 
-		return template + stringGen;
+		return template + stringGen + ";" + foodAndPathsJson;
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")

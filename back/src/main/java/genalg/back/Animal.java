@@ -70,6 +70,7 @@ class Animal {
         contestedFood = null;
         double time = 0;
         if (chasedFood != null) {
+           // System.out.println("in chasing food");
             double ratio = speed / CustomMath.dist(location, chasedFood);
             if (ratio >= 1) {
                 location = chasedFood;
@@ -91,12 +92,19 @@ class Animal {
             }
         }
         else {
+            //System.out.println("not chasing food");
             Random rand = new Random();
             Point step;
             double newDirection;
+            int dircount = 0;
             do {
-                // System.out.println("huh");
+                dircount++;
+
+                // System.out.println("huh" + dircount + " " + location.x + " " + location.y);
                 newDirection = direction;
+                if (dircount > 100) {
+                    newDirection += PI;
+                }
                 newDirection += -PI / 2 + PI * rand.nextDouble();
                 step = new Point(location.x + Math.cos(newDirection) * speed, location.y + Math.sin(newDirection) * speed);
             } while (step.x < MIN_COORD || step.x > MAX_COORD || step.y < MIN_COORD || step.y > MAX_COORD);
@@ -104,6 +112,7 @@ class Animal {
             Point foodDetectionPoint = null;
             Point fdpCandidate;
             for (int i = 0; i < foodList.size(); i++) {
+
                 fdpCandidate = CustomMath.segment_circle_intersection(location, step, foodList.get(i), sight);
                 if (fdpCandidate != null) {
                     if (foodDetectionPoint == null) {
@@ -115,6 +124,7 @@ class Animal {
                         chasedFood = foodList.get(i);
                     }
                 }
+
             }
             if (foodDetectionPoint == null) {
                 location = step;

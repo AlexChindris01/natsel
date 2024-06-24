@@ -11,7 +11,8 @@ var pathsJsonStr;
 // var pathsFetchCount = 0;
 var foodJsonStr;
 // var foodFetchCount = 0;
-var foodAndPathsJsonStr;
+// var foodAndPathsJsonStr;
+var evolveDataStrArr;
 function sketch(p5) {
   let duration;  // 5 seconds at 60 frames per second
   let currentFrame;
@@ -122,26 +123,29 @@ function App() {
           fetch('http://localhost:8080/evolve')
             .then(response => response.text())
             .then(data => {
-                setPopulation(data);
+                evolveDataStrArr = data.split(';');
+                setPopulation(evolveDataStrArr[0]);
                 if (startWarning !== '') {
                     setStartWarning('');
                 }
+                foodJsonStr = evolveDataStrArr[1];
+                pathsJsonStr = evolveDataStrArr[2];
             })
 
             .catch(error => console.error('Error:', error));
 
-          fetch('http://localhost:8080/getfoodandpaths')
-              .then(response => response.text())
-              .then(data => {
-                  foodAndPathsJsonStr = data.split(";");
-                  foodJsonStr = foodAndPathsJsonStr[0];
-                  pathsJsonStr = foodAndPathsJsonStr[1];
+          // fetch('http://localhost:8080/getfoodandpaths')
+          //     .then(response => response.text())
+          //     .then(data => {
+          //         foodAndPathsJsonStr = data.split(";");
+          //         foodJsonStr = foodAndPathsJsonStr[0];
+          //         pathsJsonStr = foodAndPathsJsonStr[1];
 
                   // pathsFetchCount++;
                   // console.log('fetched paths data number ' + pathsFetchCount);
                   // paths = JSON.parse(pathsJsonStr);
-              })
-              .catch(error => console.error('Error:', error));
+          //    })
+          //    .catch(error => console.error('Error:', error));
               //console.log(pathsJsonStr);
           // fetch('http://localhost:8080/getfoodmap')
           //     .then(response => response.text())

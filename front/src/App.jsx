@@ -8,10 +8,10 @@ import './App.css'
 import { ReactP5Wrapper } from '@p5-wrapper/react';
 
 var pathsJsonStr;
-var pathsFetchCount = 0;
+// var pathsFetchCount = 0;
 var foodJsonStr;
-var foodFetchCount = 0;
-
+// var foodFetchCount = 0;
+var foodAndPathsJsonStr;
 function sketch(p5) {
   let duration;  // 5 seconds at 60 frames per second
   let currentFrame;
@@ -25,12 +25,14 @@ function sketch(p5) {
   // let pathsJsonStr;
   // let foodJsonStr;
   let currPoint;
+  let animationSpeedFactor; // inversely proportional to speed
   const CANVAS_X = 500;
   const CANVAS_Y = 500;
   p5.setup = () => {
 
 
       p5.createCanvas(CANVAS_X, CANVAS_Y, p5.WEBGL);
+      animationSpeedFactor = 75;
       paths = JSON.parse(pathsJsonStr);
       foodMap = JSON.parse(foodJsonStr);
       currPoint = [];
@@ -38,7 +40,7 @@ function sketch(p5) {
       currentFrame = [];
     for (i = 0; i < paths.length; i++) {
         currPoint[i] = 0;
-        duration[i] = paths[i][1].moveTime * 75;
+        duration[i] = paths[i][1].moveTime * animationSpeedFactor;
         currentFrame[i] = 0;
     }
     i = 0;
@@ -88,7 +90,7 @@ function sketch(p5) {
             }
             currentFrame[j] = 0;
             currPoint[j]++;
-            duration[j] = paths[j][currPoint[j] + 1].moveTime * 75;
+            duration[j] = paths[j][currPoint[j] + 1].moveTime * animationSpeedFactor;
         }
     }
 
@@ -125,27 +127,31 @@ function App() {
                     setStartWarning('');
                 }
             })
+
             .catch(error => console.error('Error:', error));
 
-          fetch('http://localhost:8080/getpaths')
-      .then(response => response.text())
-      .then(data => {
-          pathsJsonStr = data;
-          pathsFetchCount++;
-          console.log('fetched paths data number ' + pathsFetchCount);
-          // paths = JSON.parse(pathsJsonStr);
-      })
-      .catch(error => console.error('Error:', error));
-    //console.log(pathsJsonStr);
-    fetch('http://localhost:8080/getfoodmap')
-        .then(response => response.text())
-        .then(data => {
-            foodJsonStr = data;
-            foodFetchCount++;
-            console.log('fetched food data number ' + foodFetchCount);
-            // foodMap = JSON.parse(foodJsonStr);
-        })
-        .catch(error => console.error('Error:', error));
+          fetch('http://localhost:8080/getfoodandpaths')
+              .then(response => response.text())
+              .then(data => {
+                  foodAndPathsJsonStr = data.split(";");
+                  foodJsonStr = foodAndPathsJsonStr[0];
+                  pathsJsonStr = foodAndPathsJsonStr[1];
+
+                  // pathsFetchCount++;
+                  // console.log('fetched paths data number ' + pathsFetchCount);
+                  // paths = JSON.parse(pathsJsonStr);
+              })
+              .catch(error => console.error('Error:', error));
+              //console.log(pathsJsonStr);
+          // fetch('http://localhost:8080/getfoodmap')
+          //     .then(response => response.text())
+          //     .then(data => {
+          //         foodJsonStr = data;
+          //         foodFetchCount++;
+          //         console.log('fetched food data number ' + foodFetchCount);
+          //         // foodMap = JSON.parse(foodJsonStr);
+          //     })
+          //     .catch(error => console.error('Error:', error));
       }
       }, 3000);
 
@@ -217,7 +223,7 @@ function App() {
               <button onClick={toggleSketch}>Toggle sketch</button>
               <button onClick={toggleEvolution}>Toggle evolution</button>
               <button onClick={reducefood}>Reduce amount of food</button>
-              <div id="response">{population}</div>
+              <div className="current-genes-div" id="response">{population}</div>
               <div id="startWarning">{startWarning}</div>
 
           </div>
@@ -226,14 +232,16 @@ function App() {
   else {
       return (
           <div>
+              <div>
 
-              <h2>Natural selection simulation</h2>
+                  <h2>Natural selection simulation</h2>
+                  <button onClick={toggleSketch}>Toggle sketch</button>
+                  <button onClick={toggleEvolution}>Toggle evolution</button>
+                  <button onClick={reducefood}>Reduce amount of food</button>
+                  <div className="current-genes-div" id="response">{population}</div>
+                  <div id="startWarning">{startWarning}</div>
 
-              <button onClick={toggleSketch}>Toggle sketch</button>
-              <button onClick={toggleEvolution}>Toggle evolution</button>
-              <button onClick={reducefood}>Reduce amount of food</button>
-              <div id="response">{population}</div>
-              <div id="startWarning">{startWarning}</div>
+              </div>
               <div className="sketch-div">
                   <ReactP5Wrapper sketch={sketch}/>
               </div>

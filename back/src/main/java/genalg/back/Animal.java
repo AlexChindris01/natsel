@@ -5,7 +5,7 @@ package genalg.back;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.lang.Math.*;
+
 
 import static java.lang.Math.PI;
 
@@ -22,7 +22,6 @@ class TimedLocation extends Point {
 class Animal {
     Point location;
     List<TimedLocation> searchPath;
-    static Point testFood = new Point(3, 3);
     double direction;
     double sight;
     double speed;
@@ -34,11 +33,11 @@ class Animal {
     static List<Point> foodList;
     public static final int MIN_COORD = 0;
     public static final int MAX_COORD = 500;
-    public Animal(double x, double y) {
+    public Animal(double x, double y, double sight) {
         location = new Point(x, y);
         direction = 0;
-        sight = 15;
-        speed = 24;
+        this.sight = sight;
+        speed = 39 - sight;
         chasedFood = null;
         foodEaten = 0;
         energy = 20;
@@ -54,6 +53,18 @@ class Animal {
         energy = 20;
         searchPath = new ArrayList<TimedLocation>();
     }
+
+    public Animal(double sight) {
+        location = new Point(0, 0);
+        direction = 0;
+        this.sight = sight;
+        speed = 39 - sight;
+        chasedFood = null;
+        foodEaten = 0;
+        energy = 20;
+        searchPath = new ArrayList<TimedLocation>();
+    }
+
     void searchStep() {
         timeReachedFoodLocation = -1;
         contestedFood = null;

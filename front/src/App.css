@@ -45,3 +45,7 @@
   border: 2px solid black;
   margin: 20px;
 }
+
+.current-genes-div {
+  max-width: 500px;
+}

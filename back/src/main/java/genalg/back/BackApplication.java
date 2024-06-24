@@ -16,7 +16,7 @@ public class BackApplication {
 				registry.addMapping("/evolve-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/reducefood-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/load-javaconfig").allowedOrigins("http://localhost:5173");
-				registry.addMapping("/getpaths-javaconfig").allowedOrigins("http://localhost:5173");
+				registry.addMapping("/getfoodandpaths-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/getfoodmap-javaconfig").allowedOrigins("http://localhost:5173");
 			}
 		};

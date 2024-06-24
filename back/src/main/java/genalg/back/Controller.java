@@ -8,32 +8,34 @@ import java.util.Random;
 
 @RestController
 public class Controller {
-	Animal[] gen = new Animal[10];
+	Animal[] nextGen = new Animal[10];
+	Animal[] gen;
 	String stringGen;
 	String foodListJson = "";
 	String searchPathsJson = "";
+	String foodAndPathsJson = "";
 	static boolean startedEvolution = false;
-	String template = "Current population (sight, speed, size):";
+	String template = "Current population (sight, speed):";
 	@CrossOrigin(origins = "http://localhost:5173")
 	@GetMapping("/load")
 	public String load () {
 		System.out.println("==== loading population ====");
 		int i;
 		stringGen = "";
-		for (i = 0; i < gen.length; i++) {
-			gen[i] = new Animal();
-			stringGen += gen[i].sight + " ";
-			stringGen += gen[i].speed + " | ";
+		for (i = 0; i < nextGen.length; i++) {
+			nextGen[i] = new Animal();
+			stringGen += nextGen[i].sight + " ";
+			stringGen += nextGen[i].speed + " | ";
 			// stringGen += gen[i].size + " | ";
 		}
 		return template + stringGen;
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")
-	@GetMapping("/getpaths")
-	public String getpaths() {
-		System.out.println("sent paths to front");
-		return searchPathsJson;
+	@GetMapping("/getfoodandpaths")
+	public String getfoodandpaths() {
+		System.out.println("sent food and paths to front");
+		return foodAndPathsJson;
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")
@@ -50,13 +52,13 @@ public class Controller {
 		System.out.println("==== evolving ====");
 		Animal.foodList = new ArrayList<Point>();
 		Random rand = new Random();
-		int i, j, k, energy = 20, startingFoodQuantity = 20, currentWinner;
+		int i, j, k, energy = 20, startingFoodQuantity = 50, currentWinner;
         double currentWinningTime;
-		gen = new Animal[10];
+		gen = nextGen;
 		stringGen = "";
 		for (i = 0; i < gen.length; i++) {
-			gen[i] = new Animal();
-			stringGen += gen[i].sight + " ";
+			// gen[i] = new Animal();
+			stringGen += gen[i].sight + ", ";
 			stringGen += gen[i].speed + " | ";
 			// stringGen += gen[i].size + " | ";
 		}
@@ -103,8 +105,30 @@ public class Controller {
         for (i = 0; i < gen.length; i++) {
             System.out.println("food eaten by " + i + ": " + gen[i].foodEaten);
         }
+		foodAndPathsJson = foodListJson + ";" + searchPathsJson;
 
+		int nextGenSize = 0, count = 0;
+		for (i = 0; i < gen.length; i++) {
+			if (gen[i].foodEaten >=2) {
+				nextGenSize += 2;
+			}
+			else {
+				nextGenSize += gen[i].foodEaten;
+			}
 
+		}
+		nextGen = new Animal[nextGenSize];
+		for (i = 0; i < gen.length; i++) {
+			if (gen[i].foodEaten == 1) {
+				nextGen[count] = new Animal(gen[i].sight - 0.5 + rand.nextDouble()); // will edit here to create the new animal based on the parent
+				count++;
+			}
+			else if (gen[i].foodEaten >= 2) {
+				nextGen[count] = new Animal(gen[i].sight - 0.5 + rand.nextDouble());
+				nextGen[count + 1] = new Animal(gen[i].sight - 0.5 + rand.nextDouble());
+				count += 2;
+			}
+		}
 
 		return template + stringGen;
 	}

@@ -42,6 +42,7 @@ class Animal {
         foodEaten = 0;
         energy = 20;
         searchPath = new ArrayList<TimedLocation>();
+        searchPath.add(new TimedLocation(location.x, location.y, 0));
     }
     public Animal() {
         location = new Point(0, 0);
@@ -52,6 +53,7 @@ class Animal {
         foodEaten = 0;
         energy = 20;
         searchPath = new ArrayList<TimedLocation>();
+        searchPath.add(new TimedLocation(location.x, location.y, 0));
     }
 
     public Animal(double sight) {
@@ -63,6 +65,7 @@ class Animal {
         foodEaten = 0;
         energy = 20;
         searchPath = new ArrayList<TimedLocation>();
+        searchPath.add(new TimedLocation(location.x, location.y, 0));
     }
 
     void searchStep() {

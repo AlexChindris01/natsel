@@ -43,9 +43,11 @@
 
 .sketch-div {
   border: 2px solid black;
-  margin: 20px;
+  margin: auto;
+  margin-top: 20px;
+  max-width: 500px;
 }
 
 .current-genes-div {
-  max-width: 500px;
+  max-width: 650px;
 }

@@ -10,9 +10,26 @@ import { ReactP5Wrapper } from '@p5-wrapper/react';
 var pathsJsonStr;
 // var pathsFetchCount = 0;
 var foodJsonStr;
+var genesJsonStr;
+var populationStr;
 // var foodFetchCount = 0;
 // var foodAndPathsJsonStr;
 var evolveDataStrArr;
+
+const evolve = () => {
+      fetch('http://localhost:8080/evolve')
+        .then(response => response.text())
+        .then(data => {
+            evolveDataStrArr = data.split(';');
+            populationStr = evolveDataStrArr[0];
+            foodJsonStr = evolveDataStrArr[1];
+            pathsJsonStr = evolveDataStrArr[2];
+            genesJsonStr = evolveDataStrArr[3];
+        })
+
+        .catch(error => console.error('Error:', error));
+  }
+
 function sketch(p5) {
   let duration;  // 5 seconds at 60 frames per second
   let currentFrame;
@@ -23,10 +40,15 @@ function sketch(p5) {
   // let testMsgInt;
   let paths;
   let foodMap;
+  let genes;
   // let pathsJsonStr;
   // let foodJsonStr;
   let currPoint;
   let animationSpeedFactor; // inversely proportional to speed
+  let colorFactor;
+  let animationEnded;
+  let timeBetweenGenerations;
+  let counterBetweenGenerations;
   const CANVAS_X = 500;
   const CANVAS_Y = 500;
   p5.setup = () => {
@@ -34,8 +56,12 @@ function sketch(p5) {
 
       p5.createCanvas(CANVAS_X, CANVAS_Y, p5.WEBGL);
       animationSpeedFactor = 75;
+      timeBetweenGenerations = 120;
+      counterBetweenGenerations = 0;
       paths = JSON.parse(pathsJsonStr);
       foodMap = JSON.parse(foodJsonStr);
+      genes = JSON.parse(genesJsonStr);
+      evolve();
       currPoint = [];
       duration = [];
       currentFrame = [];
@@ -44,7 +70,6 @@ function sketch(p5) {
         duration[i] = paths[i][1].moveTime * animationSpeedFactor;
         currentFrame[i] = 0;
     }
-    i = 0;
 
   }
 
@@ -59,40 +84,72 @@ function sketch(p5) {
       }
     p5.fill(0);
 
+
     // Calculate the current position of the dot
     for (j = 0; j < paths.length; j++) {
-        x = p5.lerp(paths[j][currPoint[j]].x, paths[j][currPoint[j] + 1].x, currentFrame[j] / duration[j]);
-        y = p5.lerp(paths[j][currPoint[j]].y, paths[j][currPoint[j] + 1].y, currentFrame[j] / duration[j]);
-
-        if (j === 0) p5.fill('red');
-        if (j === 1) p5.fill('blue');
-        if (j === 2) p5.fill('green');
-        if (j === 3) p5.fill('yellow');
-        if (j === 4) p5.fill('purple');
-        if (j === 5) p5.fill('orange');
-        if (j === 6) p5.fill('brown');
-        if (j === 7) p5.fill('white');
-        if (j === 8) p5.fill('black');
-        if (j === 9) p5.fill('pink');
+        if (currPoint[j] + 1 < paths[j].length) {
+            x = p5.lerp(paths[j][currPoint[j]].x, paths[j][currPoint[j] + 1].x, currentFrame[j] / duration[j]);
+            y = p5.lerp(paths[j][currPoint[j]].y, paths[j][currPoint[j] + 1].y, currentFrame[j] / duration[j]);
+        }
+        else {
+            x = paths[j][currPoint[j]].x;
+            y = paths[j][currPoint[j]].y;
+        }
+        colorFactor = genes[j].sight / 15;
+        colorFactor *= colorFactor * colorFactor * colorFactor * colorFactor;
+        if (colorFactor > 1) {
+            p5.fill(205, 0, 205 / colorFactor);
+        }
+        else {
+            p5.fill(205 * colorFactor, 0, 205);
+        }
         p5.ellipse(x, y, 10, 10);
     }
 
 
-    // Update the frame counter
+    animationEnded = true;
     for (j = 0; j < paths.length; j++) {
-        if (currentFrame[j] < duration[j]) {
-            currentFrame[j]++;
+        if (currPoint[j] + 1 < paths[j].length) {
+            animationEnded = false;
+            if (currentFrame[j] < duration[j]) {
+                currentFrame[j]++;
+            }
+            else {
+                for (k = 0; k < foodMap.length; k++) {
+                    if (paths[j][currPoint[j] + 1].x === foodMap[k].x && paths[j][currPoint[j] + 1].y === foodMap[k].y) {
+                        foodMap.splice(k, 1);
+                    }
+                }
+                currentFrame[j] = 0;
+                currPoint[j]++;
+                if (currPoint[j] + 1 < paths[j].length) {
+                    duration[j] = paths[j][currPoint[j] + 1].moveTime * animationSpeedFactor;
+                }
+
+            }
+        }
+
+    }
+    if (animationEnded) {
+        if (counterBetweenGenerations < timeBetweenGenerations) {
+            counterBetweenGenerations++;
         }
         else {
-            for (k = 0; k < foodMap.length; k++) {
-                if (paths[j][currPoint[j] + 1].x === foodMap[k].x && paths[j][currPoint[j] + 1].y === foodMap[k].y) {
-                    foodMap.splice(k, 1);
-                }
+            counterBetweenGenerations = 0;
+            paths = JSON.parse(pathsJsonStr);
+            foodMap = JSON.parse(foodJsonStr);
+            genes = JSON.parse(genesJsonStr);
+            currPoint = [];
+            duration = [];
+            currentFrame = [];
+            for (i = 0; i < paths.length; i++) {
+                currPoint[i] = 0;
+                duration[i] = paths[i][1].moveTime * animationSpeedFactor;
+                currentFrame[i] = 0;
             }
-            currentFrame[j] = 0;
-            currPoint[j]++;
-            duration[j] = paths[j][currPoint[j] + 1].moveTime * animationSpeedFactor;
+            evolve();
         }
+
     }
 
   };
@@ -112,6 +169,7 @@ function App() {
     .then(response => response.text())
     .then(data => {
         setPopulation(data);
+        populationStr = data;
     })
     .catch(error => console.error('Error:', error));
 
@@ -128,58 +186,25 @@ function App() {
                 if (startWarning !== '') {
                     setStartWarning('');
                 }
+                populationStr = evolveDataStrArr[0];
                 foodJsonStr = evolveDataStrArr[1];
                 pathsJsonStr = evolveDataStrArr[2];
+                genesJsonStr = evolveDataStrArr[3];
             })
 
             .catch(error => console.error('Error:', error));
 
-          // fetch('http://localhost:8080/getfoodandpaths')
-          //     .then(response => response.text())
-          //     .then(data => {
-          //         foodAndPathsJsonStr = data.split(";");
-          //         foodJsonStr = foodAndPathsJsonStr[0];
-          //         pathsJsonStr = foodAndPathsJsonStr[1];
 
-                  // pathsFetchCount++;
-                  // console.log('fetched paths data number ' + pathsFetchCount);
-                  // paths = JSON.parse(pathsJsonStr);
-          //    })
-          //    .catch(error => console.error('Error:', error));
-              //console.log(pathsJsonStr);
-          // fetch('http://localhost:8080/getfoodmap')
-          //     .then(response => response.text())
-          //     .then(data => {
-          //         foodJsonStr = data;
-          //         foodFetchCount++;
-          //         console.log('fetched food data number ' + foodFetchCount);
-          //         // foodMap = JSON.parse(foodJsonStr);
-          //     })
-          //     .catch(error => console.error('Error:', error));
-      }
+          }
+          else {
+              setPopulation(populationStr);
+          }
       }, 3000);
 
       return () => clearInterval(interval);
   }, [evolution, startWarning])
 
-  // var lklk = 0;
-  // const evolve = () => {
-  //     if (evolution === true) {
-  //         fetch('http://localhost:8080/evolve')
-  //           .then(response => response.text())
-  //           .then(data => {
-  //               setPopulation(data);
-  //               if (startWarning !== '') {
-  //                   setStartWarning('');
-  //               }
-  //           })
-  //           .catch(error => console.error('Error:', error));
-  //     }
-  //     else {
-  //         lklk++;
-  //         console.log(lklk);
-  //     }
-  // };
+
 
 
   const reducefood = () => {
@@ -222,11 +247,11 @@ function App() {
   if (showSketch === false) {
       return (
           <div>
-              <h2>Natural selection simulation</h2>
+              <h2>Simularea selecției naturale</h2>
 
-              <button onClick={toggleSketch}>Toggle sketch</button>
-              <button onClick={toggleEvolution}>Toggle evolution</button>
-              <button onClick={reducefood}>Reduce amount of food</button>
+              <button onClick={toggleSketch}>Deschide animația</button>
+              <button onClick={toggleEvolution}>Pornește/oprește evoluția</button>
+              <button onClick={reducefood}>Redu cantitatea de hrană</button>
               <div className="current-genes-div" id="response">{population}</div>
               <div id="startWarning">{startWarning}</div>
 
@@ -238,10 +263,10 @@ function App() {
           <div>
               <div>
 
-                  <h2>Natural selection simulation</h2>
-                  <button onClick={toggleSketch}>Toggle sketch</button>
-                  <button onClick={toggleEvolution}>Toggle evolution</button>
-                  <button onClick={reducefood}>Reduce amount of food</button>
+                  <h2>Simularea selecției naturale</h2>
+                  <button onClick={toggleSketch}>Închide animația</button>
+                  <button onClick={toggleEvolution}>Pornește/oprește evoluția</button>
+                  <button onClick={reducefood}>Redu cantitatea de hrană</button>
                   <div className="current-genes-div" id="response">{population}</div>
                   <div id="startWarning">{startWarning}</div>
 

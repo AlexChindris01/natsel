@@ -46,11 +46,16 @@ function sketch(p5) {
   // let pathsJsonStr;
   // let foodJsonStr;
   let currPoint;
+  let ateList;
   let animationSpeedFactor; // inversely proportional to speed
   let colorFactor;
   let animationEnded;
   let timeBetweenGenerations;
   let counterBetweenGenerations;
+  let fade;
+  let fadePhase;
+  let numberOfFadePhases;
+  let fadeHelperRatio;
   const CANVAS_X = 500;
   const CANVAS_Y = 500;
   p5.setup = () => {
@@ -58,18 +63,21 @@ function sketch(p5) {
 
       p5.createCanvas(CANVAS_X, CANVAS_Y, p5.WEBGL);
       animationSpeedFactor = 75;
-      timeBetweenGenerations = 120;
+      timeBetweenGenerations = 600;
       counterBetweenGenerations = 0;
+      numberOfFadePhases = 9; // should be an odd number
       paths = JSON.parse(pathsJsonStr);
       foodMap = JSON.parse(foodJsonStr);
       genes = JSON.parse(genesJsonStr);
       currPoint = [];
       duration = [];
       currentFrame = [];
+      ateList = [];
     for (i = 0; i < paths.length; i++) {
         currPoint[i] = 0;
         duration[i] = paths[i][1].moveTime * animationSpeedFactor;
         currentFrame[i] = 0;
+        ateList[i] = false;
     }
 
   }
@@ -98,11 +106,27 @@ function sketch(p5) {
         }
         colorFactor = genes[j].sight / 15;
         colorFactor *= colorFactor * colorFactor * colorFactor * colorFactor;
+        fade = 255;
+        fadeHelperRatio = 2 * counterBetweenGenerations / timeBetweenGenerations;
+        if (animationEnded && ateList[j] === false && fadeHelperRatio < 1) {
+
+            fadePhase = Math.floor(numberOfFadePhases * fadeHelperRatio);
+            if (fadePhase % 2 === 0) {
+                fade *= (1 - (numberOfFadePhases * fadeHelperRatio - Math.floor(numberOfFadePhases * fadeHelperRatio)));
+            }
+            else {
+                fade *= (numberOfFadePhases * fadeHelperRatio - Math.floor(numberOfFadePhases * fadeHelperRatio));
+            }
+        }
+        else if (animationEnded && ateList[j] === false) {
+            fade = 0;
+        }
+        p5.stroke(0, fade);
         if (colorFactor > 1) {
-            p5.fill(205, 0, 205 / colorFactor);
+            p5.fill(205, 0, 205 / colorFactor, fade);
         }
         else {
-            p5.fill(205 * colorFactor, 0, 205);
+            p5.fill(205 * colorFactor, 0, 205, fade);
         }
         p5.ellipse(x, y, 10, 10);
     }
@@ -119,6 +143,7 @@ function sketch(p5) {
                 for (k = 0; k < foodMap.length; k++) {
                     if (paths[j][currPoint[j] + 1].x === foodMap[k].x && paths[j][currPoint[j] + 1].y === foodMap[k].y) {
                         foodMap.splice(k, 1);
+                        ateList[j] = true;
                     }
                 }
                 currentFrame[j] = 0;
@@ -146,10 +171,12 @@ function sketch(p5) {
             currPoint = [];
             duration = [];
             currentFrame = [];
+            ateList = [];
             for (i = 0; i < paths.length; i++) {
                 currPoint[i] = 0;
                 duration[i] = paths[i][1].moveTime * animationSpeedFactor;
                 currentFrame[i] = 0;
+                ateList[i] = false;
             }
         }
 

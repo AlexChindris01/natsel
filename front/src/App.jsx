@@ -15,12 +15,14 @@ var populationStr;
 // var foodFetchCount = 0;
 // var foodAndPathsJsonStr;
 var evolveDataStrArr;
+var currGen = 0;
 
 const evolve = () => {
       fetch('http://localhost:8080/evolve')
         .then(response => response.text())
         .then(data => {
             evolveDataStrArr = data.split(';');
+            currGen++;
             populationStr = evolveDataStrArr[0];
             foodJsonStr = evolveDataStrArr[1];
             pathsJsonStr = evolveDataStrArr[2];
@@ -61,7 +63,6 @@ function sketch(p5) {
       paths = JSON.parse(pathsJsonStr);
       foodMap = JSON.parse(foodJsonStr);
       genes = JSON.parse(genesJsonStr);
-      evolve();
       currPoint = [];
       duration = [];
       currentFrame = [];
@@ -132,6 +133,9 @@ function sketch(p5) {
     }
     if (animationEnded) {
         if (counterBetweenGenerations < timeBetweenGenerations) {
+            if (counterBetweenGenerations === 0) {
+                evolve();
+            }
             counterBetweenGenerations++;
         }
         else {
@@ -147,7 +151,6 @@ function sketch(p5) {
                 duration[i] = paths[i][1].moveTime * animationSpeedFactor;
                 currentFrame[i] = 0;
             }
-            evolve();
         }
 
     }
@@ -182,7 +185,8 @@ function App() {
             .then(response => response.text())
             .then(data => {
                 evolveDataStrArr = data.split(';');
-                setPopulation(evolveDataStrArr[0]);
+                currGen++;
+                setPopulation(evolveDataStrArr[0] + " current gen: " + currGen);
                 if (startWarning !== '') {
                     setStartWarning('');
                 }
@@ -197,9 +201,9 @@ function App() {
 
           }
           else {
-              setPopulation(populationStr);
+              setPopulation(populationStr + " current gen: " + currGen);
           }
-      }, 3000);
+      }, 1000);
 
       return () => clearInterval(interval);
   }, [evolution, startWarning])

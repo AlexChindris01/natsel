@@ -37,7 +37,7 @@ class Animal {
         location = new Point(x, y);
         direction = 0;
         this.sight = sight;
-        speed = 39 - sight;
+        speed = 39 - 0.5 * sight;
         chasedFood = null;
         foodEaten = 0;
         energy = 20;
@@ -48,7 +48,7 @@ class Animal {
         location = new Point(0, 0);
         direction = 0;
         sight = 15;
-        speed = 24;
+        speed = 31.5;
         chasedFood = null;
         foodEaten = 0;
         energy = 20;
@@ -60,7 +60,7 @@ class Animal {
         location = new Point(0, 0);
         direction = 0;
         this.sight = sight;
-        speed = 39 - sight;
+        speed = 39 - 0.5 * sight;
         chasedFood = null;
         foodEaten = 0;
         energy = 20;
@@ -95,70 +95,104 @@ class Animal {
             }
         }
         else {
-            //System.out.println("not chasing food");
-            Random rand = new Random();
-            Point step;
-            double newDirection;
-            int dircount = 0;
-            do {
-                dircount++;
-
-                // System.out.println("huh" + dircount + " " + location.x + " " + location.y);
-                newDirection = direction;
-                if (dircount > 100) {
-                    newDirection += PI;
-                }
-                newDirection += -PI / 2 + PI * rand.nextDouble();
-                step = new Point(location.x + Math.cos(newDirection) * speed, location.y + Math.sin(newDirection) * speed);
-            } while (step.x < MIN_COORD || step.x > MAX_COORD || step.y < MIN_COORD || step.y > MAX_COORD);
-            direction = newDirection;
-            Point foodDetectionPoint = null;
-            Point fdpCandidate;
+            Point spottedFood = null;
+            Point spottedFoodCandidate;
             for (int i = 0; i < foodList.size(); i++) {
-
-                fdpCandidate = CustomMath.segment_circle_intersection(location, step, foodList.get(i), sight);
-                if (fdpCandidate != null) {
-                    if (foodDetectionPoint == null) {
-                        foodDetectionPoint = fdpCandidate;
-                        chasedFood = foodList.get(i);
+                if (CustomMath.dist(location, foodList.get(i)) < sight) {
+                    spottedFoodCandidate = foodList.get(i);
+                    if (spottedFood == null) {
+                        spottedFood = spottedFoodCandidate;
                     }
-                    else if (CustomMath.dist(location, fdpCandidate) < CustomMath.dist(location, foodDetectionPoint)) {
-                        foodDetectionPoint = fdpCandidate;
-                        chasedFood = foodList.get(i);
+                    else if (CustomMath.dist(location, spottedFoodCandidate) < CustomMath.dist(location, spottedFood)) {
+                        spottedFood = spottedFoodCandidate;
                     }
                 }
 
             }
-            if (foodDetectionPoint == null) {
-                location = step;
-                searchPath.add(new TimedLocation(location.x, location.y, 1));
-            }
-            else {
-                time = CustomMath.dist(location, foodDetectionPoint) / speed;
-                location.copy(foodDetectionPoint);
-                searchPath.add(new TimedLocation(location.x, location.y, time));
-                double stepRemainder = CustomMath.dist(foodDetectionPoint, step);
-                double ratio = stepRemainder / sight;
+            if (spottedFood != null) {
+                chasedFood = spottedFood;
+                double ratio = speed / CustomMath.dist(location, chasedFood);
                 if (ratio >= 1) {
                     location.copy(chasedFood);
-                    searchPath.add(new TimedLocation(location.x, location.y, sight / speed));
-                    searchPath.add(new TimedLocation(location.x, location.y, 1 - time - sight / speed));
-                    timeReachedFoodLocation = time + sight / speed;
+                    searchPath.add(new TimedLocation(location.x, location.y, 1 / ratio));
+                    searchPath.add(new TimedLocation(location.x, location.y, 1 - 1 / ratio));
+                    timeReachedFoodLocation = 1 / ratio;
                     contestedFood = location;
-                    // foodEaten++;
-                    // foodList.remove(chasedFood);
-                    chasedFood = null; // to replace with awarding the food to the first animal that gets to it
-
-                    // to implement: make the food item disappear etc
+                    chasedFood = null;
                 }
                 else {
                     location.x += ratio * (chasedFood.x - location.x);
                     location.y += ratio * (chasedFood.y - location.y);
-                    searchPath.add(new TimedLocation(location.x, location.y, 1 - time));
-                    // System.out.println("added to search path: " + location.x + " " + location.y + " " + time);
+                    searchPath.add(new TimedLocation(location.x, location.y, 1));
+                }
+            }
+            else {
+                //System.out.println("not chasing food");
+                Random rand = new Random();
+                Point step;
+                double newDirection;
+                int dircount = 0;
+                do {
+                    dircount++;
+
+                    // System.out.println("huh" + dircount + " " + location.x + " " + location.y);
+                    newDirection = direction;
+                    if (dircount > 100) {
+                        newDirection += PI;
+                    }
+                    newDirection += -PI / 2 + PI * rand.nextDouble();
+                    step = new Point(location.x + Math.cos(newDirection) * speed, location.y + Math.sin(newDirection) * speed);
+                } while (step.x < MIN_COORD || step.x > MAX_COORD || step.y < MIN_COORD || step.y > MAX_COORD);
+                direction = newDirection;
+                Point foodDetectionPoint = null;
+                Point fdpCandidate;
+                for (int i = 0; i < foodList.size(); i++) {
+
+                    fdpCandidate = CustomMath.segment_circle_intersection(location, step, foodList.get(i), sight);
+                    if (fdpCandidate != null) {
+                        if (foodDetectionPoint == null) {
+                            foodDetectionPoint = fdpCandidate;
+                            chasedFood = foodList.get(i);
+                        }
+                        else if (CustomMath.dist(location, fdpCandidate) < CustomMath.dist(location, foodDetectionPoint)) {
+                            foodDetectionPoint = fdpCandidate;
+                            chasedFood = foodList.get(i);
+                        }
+                    }
+
+                }
+                if (foodDetectionPoint == null) {
+                    location = step;
+                    searchPath.add(new TimedLocation(location.x, location.y, 1));
+                }
+                else {
+                    time = CustomMath.dist(location, foodDetectionPoint) / speed;
+                    location.copy(foodDetectionPoint);
+                    searchPath.add(new TimedLocation(location.x, location.y, time));
+                    double stepRemainder = CustomMath.dist(foodDetectionPoint, step);
+                    double ratio = stepRemainder / sight;
+                    if (ratio >= 1) {
+                        location.copy(chasedFood);
+                        searchPath.add(new TimedLocation(location.x, location.y, sight / speed));
+                        searchPath.add(new TimedLocation(location.x, location.y, 1 - time - sight / speed));
+                        timeReachedFoodLocation = time + sight / speed;
+                        contestedFood = location;
+                        // foodEaten++;
+                        // foodList.remove(chasedFood);
+                        chasedFood = null; // to replace with awarding the food to the first animal that gets to it
+
+                        // to implement: make the food item disappear etc
+                    }
+                    else {
+                        location.x += ratio * (chasedFood.x - location.x);
+                        location.y += ratio * (chasedFood.y - location.y);
+                        searchPath.add(new TimedLocation(location.x, location.y, 1 - time));
+                        // System.out.println("added to search path: " + location.x + " " + location.y + " " + time);
+                    }
                 }
             }
         }
+
     }
     void search() {
         int i;

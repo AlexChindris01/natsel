@@ -56,16 +56,25 @@ function sketch(p5) {
   let fadePhase;
   let numberOfFadePhases;
   let fadeHelperRatio;
+  let timeBeforeAnimation; // takes place after time between generations
+  let counterBeforeAnimation;
+  let foodFade;
+  let eatenFood;
+  let startingFoodQuantity;
   const CANVAS_X = 500;
   const CANVAS_Y = 500;
   p5.setup = () => {
 
 
       p5.createCanvas(CANVAS_X, CANVAS_Y, p5.WEBGL);
+      startingFoodQuantity = 50;
       animationSpeedFactor = 75;
       timeBetweenGenerations = 600;
       counterBetweenGenerations = 0;
       numberOfFadePhases = 9; // should be an odd number
+      timeBeforeAnimation = 300;
+      counterBeforeAnimation = 0;
+      eatenFood = 0;
       paths = JSON.parse(pathsJsonStr);
       foodMap = JSON.parse(foodJsonStr);
       genes = JSON.parse(genesJsonStr);
@@ -77,7 +86,7 @@ function sketch(p5) {
         currPoint[i] = 0;
         duration[i] = paths[i][1].moveTime * animationSpeedFactor;
         currentFrame[i] = 0;
-        ateList[i] = false;
+        ateList[i] = genes[i].reproduced;
     }
 
   }
@@ -87,16 +96,30 @@ function sketch(p5) {
     let x;
     let y;
     p5.background(255); // Clear the canvas with a white background
-    p5.fill('rgb(0, 255, 0)');
-    for (j = 0; j < foodMap.length; j++) {
+    p5.fill(0, 255, 0);
+    p5.stroke(0);
+    for (j = 0; j < startingFoodQuantity - eatenFood; j++) {
+        p5.ellipse(foodMap[j].x, foodMap[j].y, 5, 5);
+    }
+    if (counterBeforeAnimation > 0.75 * timeBeforeAnimation) {
+        foodFade = 255;
+    }
+    else if (counterBeforeAnimation < 0.25 * timeBeforeAnimation) {
+        foodFade = 0;
+    }
+    else {
+        foodFade = 255 * ((counterBeforeAnimation / timeBeforeAnimation) - 0.25) * 2;
+    }
+    p5.fill(0, 255, 0, foodFade);
+    p5.stroke(0, foodFade);
+    for (j = startingFoodQuantity - eatenFood; j < foodMap.length; j++) {
         p5.ellipse(foodMap[j].x, foodMap[j].y, 5, 5);
       }
-    p5.fill(0);
 
 
     // Calculate the current position of the dot
     for (j = 0; j < paths.length; j++) {
-        if (currPoint[j] + 1 < paths[j].length) {
+        if (currPoint[j] + 1 < paths[j].length && counterBeforeAnimation === timeBeforeAnimation) {
             x = p5.lerp(paths[j][currPoint[j]].x, paths[j][currPoint[j] + 1].x, currentFrame[j] / duration[j]);
             y = p5.lerp(paths[j][currPoint[j]].y, paths[j][currPoint[j] + 1].y, currentFrame[j] / duration[j]);
         }
@@ -131,55 +154,63 @@ function sketch(p5) {
         p5.ellipse(x, y, 10, 10);
     }
 
+    if (counterBeforeAnimation === timeBeforeAnimation) {
+        animationEnded = true;
+        for (j = 0; j < paths.length; j++) {
+            if (currPoint[j] + 1 < paths[j].length) {
+                animationEnded = false;
+                if (currentFrame[j] < duration[j]) {
+                    currentFrame[j]++;
+                }
+                else {
+                    for (k = 0; k < foodMap.length; k++) {
+                        if (paths[j][currPoint[j] + 1].x === foodMap[k].x && paths[j][currPoint[j] + 1].y === foodMap[k].y) {
+                            foodMap.splice(k, 1);
+                            eatenFood++;
+                        }
+                    }
+                    currentFrame[j] = 0;
+                    currPoint[j]++;
+                    if (currPoint[j] + 1 < paths[j].length) {
+                        duration[j] = paths[j][currPoint[j] + 1].moveTime * animationSpeedFactor;
+                    }
 
-    animationEnded = true;
-    for (j = 0; j < paths.length; j++) {
-        if (currPoint[j] + 1 < paths[j].length) {
-            animationEnded = false;
-            if (currentFrame[j] < duration[j]) {
-                currentFrame[j]++;
+                }
+            }
+
+        }
+        if (animationEnded) {
+            if (counterBetweenGenerations < timeBetweenGenerations) {
+                if (counterBetweenGenerations === 0) {
+                    evolve();
+                }
+                counterBetweenGenerations++;
             }
             else {
-                for (k = 0; k < foodMap.length; k++) {
-                    if (paths[j][currPoint[j] + 1].x === foodMap[k].x && paths[j][currPoint[j] + 1].y === foodMap[k].y) {
-                        foodMap.splice(k, 1);
-                        ateList[j] = true;
-                    }
+                counterBetweenGenerations = 0;
+                paths = JSON.parse(pathsJsonStr);
+                foodMap = JSON.parse(foodJsonStr);
+                genes = JSON.parse(genesJsonStr);
+                currPoint = [];
+                duration = [];
+                currentFrame = [];
+                ateList = [];
+                counterBeforeAnimation = 0;
+                for (i = 0; i < paths.length; i++) {
+                    currPoint[i] = 0;
+                    duration[i] = paths[i][1].moveTime * animationSpeedFactor;
+                    currentFrame[i] = 0;
+                    ateList[i] = genes[i].reproduced;
                 }
-                currentFrame[j] = 0;
-                currPoint[j]++;
-                if (currPoint[j] + 1 < paths[j].length) {
-                    duration[j] = paths[j][currPoint[j] + 1].moveTime * animationSpeedFactor;
-                }
-
             }
-        }
 
+        }
     }
-    if (animationEnded) {
-        if (counterBetweenGenerations < timeBetweenGenerations) {
-            if (counterBetweenGenerations === 0) {
-                evolve();
-            }
-            counterBetweenGenerations++;
+    else {
+        counterBeforeAnimation++;
+        if (counterBeforeAnimation === timeBeforeAnimation) {
+            eatenFood = 0;
         }
-        else {
-            counterBetweenGenerations = 0;
-            paths = JSON.parse(pathsJsonStr);
-            foodMap = JSON.parse(foodJsonStr);
-            genes = JSON.parse(genesJsonStr);
-            currPoint = [];
-            duration = [];
-            currentFrame = [];
-            ateList = [];
-            for (i = 0; i < paths.length; i++) {
-                currPoint[i] = 0;
-                duration[i] = paths[i][1].moveTime * animationSpeedFactor;
-                currentFrame[i] = 0;
-                ateList[i] = false;
-            }
-        }
-
     }
 
   };

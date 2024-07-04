@@ -9,9 +9,11 @@ import java.util.Random;
 class Chromosome {
 	double sight;
 	double speed;
-	Chromosome(double sight, double speed) {
+	boolean reproduced;
+	Chromosome(double sight, double speed, boolean reproduced) {
 		this.sight = sight;
 		this.speed = speed;
+		this.reproduced = reproduced;
 	}
 }
 
@@ -70,13 +72,13 @@ public class Controller {
 		stringGen = "";
 		for (i = 0; i < gen.length; i++) {
 			// gen[i] = new Animal();
-			populationGenes.add(new Chromosome(gen[i].sight, gen[i].speed));
+			populationGenes.add(new Chromosome(gen[i].sight, gen[i].speed, false));
 			stringGen += String.format("%.2f", gen[i].sight) + ", ";
 			stringGen += String.format("%.2f", gen[i].speed) + " | ";
 			// stringGen += gen[i].size + " | ";
 		}
 
-		populationGenesJson = new Gson().toJson(populationGenes);
+
 		foodListSize = Animal.foodList.size();
 		for (i = foodListSize; i < startingFoodQuantity; i++) {
             Animal.foodList.add(new Point(Animal.MAX_COORD * rand.nextDouble(), Animal.MAX_COORD * rand.nextDouble()));
@@ -119,7 +121,11 @@ public class Controller {
         System.out.println("Search paths json: \n" + searchPathsJson);
         for (i = 0; i < gen.length; i++) {
             System.out.println("food eaten by " + i + ": " + gen[i].foodEaten);
+			if (gen[i].foodEaten != 0) {
+				populationGenes.set(i, new Chromosome(gen[i].sight, gen[i].speed, true));
+			}
         }
+		populationGenesJson = new Gson().toJson(populationGenes);
 		generationDataJson = foodListJson + ";" + searchPathsJson + ";" + populationGenesJson;
 
 		int nextGenSize = 0, count = 0;

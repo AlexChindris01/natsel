@@ -48,7 +48,7 @@ class Animal {
         location = new Point(0, 0);
         direction = 0;
         sight = 15;
-        speed = 31.5;
+        speed = 39 - 0.5 * sight;
         chasedFood = null;
         foodEaten = 0;
         energy = 20;
@@ -76,13 +76,13 @@ class Animal {
            // System.out.println("in chasing food");
             double ratio = speed / CustomMath.dist(location, chasedFood);
             if (ratio >= 1) {
-                location = chasedFood;
+                location.copy(chasedFood);
                 time = 1 / ratio;
                 searchPath.add(new TimedLocation(location.x, location.y, time));
                 // System.out.println("Added to search path: " + location.x + " " + location.y + " " + time);
                 searchPath.add(new TimedLocation(location.x, location.y, 1 - time));
                 timeReachedFoodLocation = time;
-                contestedFood = location;
+                contestedFood = new Point(location.x, location.y);
                 // foodEaten++;
                 // foodList.remove(chasedFood);
                 chasedFood = null;
@@ -110,14 +110,22 @@ class Animal {
 
             }
             if (spottedFood != null) {
-                chasedFood = spottedFood;
+                Point oldLoc = new Point(location.x, location.y);
+                chasedFood = new Point(spottedFood.x, spottedFood.y);
                 double ratio = speed / CustomMath.dist(location, chasedFood);
                 if (ratio >= 1) {
+                    if (1 / ratio == 0) {
+                        System.out.println("time 0; location before copy: " + location.x + " " + location.y
+                        + "\nlocation before assignment: " + oldLoc.x + " " + oldLoc.y);
+                    }
                     location.copy(chasedFood);
                     searchPath.add(new TimedLocation(location.x, location.y, 1 / ratio));
+                    if (1 / ratio == 0) {
+                        System.out.println("warning: time 0; ratio is " + ratio + "; location is " + location.x + " " + location.y);
+                    }
                     searchPath.add(new TimedLocation(location.x, location.y, 1 - 1 / ratio));
                     timeReachedFoodLocation = 1 / ratio;
-                    contestedFood = location;
+                    contestedFood = new Point(location.x, location.y);
                     chasedFood = null;
                 }
                 else {
@@ -162,7 +170,7 @@ class Animal {
 
                 }
                 if (foodDetectionPoint == null) {
-                    location = step;
+                    location.copy(step);
                     searchPath.add(new TimedLocation(location.x, location.y, 1));
                 }
                 else {
@@ -176,7 +184,7 @@ class Animal {
                         searchPath.add(new TimedLocation(location.x, location.y, sight / speed));
                         searchPath.add(new TimedLocation(location.x, location.y, 1 - time - sight / speed));
                         timeReachedFoodLocation = time + sight / speed;
-                        contestedFood = location;
+                        contestedFood = new Point(location.x, location.y);
                         // foodEaten++;
                         // foodList.remove(chasedFood);
                         chasedFood = null; // to replace with awarding the food to the first animal that gets to it

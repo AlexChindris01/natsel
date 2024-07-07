@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useEffect } from 'react'
 import './App.css'
+import Inconsolata from './assets/Inconsolata-Regular.ttf'
 
 
 // import React, { Component } from 'react';
@@ -10,7 +11,7 @@ import { ReactP5Wrapper } from '@p5-wrapper/react';
 var pathsJsonStr;
 // var pathsFetchCount = 0;
 var foodJsonStr;
-var genesJsonStr;
+var genesJsonStr = "";
 var populationStr;
 // var foodFetchCount = 0;
 // var foodAndPathsJsonStr;
@@ -31,6 +32,45 @@ const evolve = () => {
 
         .catch(error => console.error('Error:', error));
   }
+
+function genesSketch(p5g) {
+    const CANVAS_X = 500;
+    const CANVAS_Y = 100;
+    const MAX_VISIBLE_SIGHT = 40;
+    let genes;
+    let i;
+    let y;
+    let myFont;
+    p5g.preload = () => {
+        myFont = p5g.loadFont(Inconsolata);
+    }
+
+    p5g.setup = () => {
+        p5g.createCanvas(CANVAS_X, CANVAS_Y, p5g.WEBGL);
+        p5g.frameRate(5);
+        y = 0.45 * CANVAS_Y;
+        p5g.textFont(myFont);
+    }
+    p5g.draw = () => {
+        p5g.translate(-CANVAS_X / 2, -CANVAS_Y / 2);
+        p5g.background(255);
+        p5g.text("Vedere", 0, CANVAS_Y / 8);
+        p5g.text("Viteză", 0, 7 * CANVAS_Y / 8);
+        let x;
+        p5g.fill(122);
+        if (genesJsonStr !== ""){
+            for (i = 0; i <= MAX_VISIBLE_SIGHT; i += 3) {
+                p5g.text(i.toString(), CANVAS_X * (i / MAX_VISIBLE_SIGHT), CANVAS_Y / 4);
+                p5g.text((39 - 0.5 * i).toString(), CANVAS_X * (i / MAX_VISIBLE_SIGHT), 3 * CANVAS_Y / 4);
+            }
+            genes = JSON.parse(genesJsonStr);
+            for (i = 0; i < genes.length; i++) {
+                x = CANVAS_X * (genes[i].sight / MAX_VISIBLE_SIGHT);
+                p5g.ellipse(x, y, 10, 10);
+            }
+        }
+    }
+}
 
 function sketch(p5) {
   let duration;  // 5 seconds at 60 frames per second
@@ -61,13 +101,13 @@ function sketch(p5) {
   let foodFade;
   let eatenFood;
   let startingFoodQuantity;
+  let oldStartingFoodQuantity;
   const CANVAS_X = 500;
   const CANVAS_Y = 500;
   p5.setup = () => {
 
 
       p5.createCanvas(CANVAS_X, CANVAS_Y, p5.WEBGL);
-      startingFoodQuantity = 50;
       animationSpeedFactor = 75;
       timeBetweenGenerations = 600;
       counterBetweenGenerations = 0;
@@ -78,6 +118,8 @@ function sketch(p5) {
       paths = JSON.parse(pathsJsonStr);
       foodMap = JSON.parse(foodJsonStr);
       genes = JSON.parse(genesJsonStr);
+      startingFoodQuantity = foodMap.length;
+      oldStartingFoodQuantity = startingFoodQuantity;
       currPoint = [];
       duration = [];
       currentFrame = [];
@@ -98,7 +140,7 @@ function sketch(p5) {
     p5.background(255); // Clear the canvas with a white background
     p5.fill(0, 255, 0);
     p5.stroke(0);
-    for (j = 0; j < startingFoodQuantity - eatenFood; j++) {
+    for (j = 0; j < oldStartingFoodQuantity - eatenFood; j++) {
         p5.ellipse(foodMap[j].x, foodMap[j].y, 5, 5);
     }
     if (counterBeforeAnimation > 0.75 * timeBeforeAnimation) {
@@ -112,7 +154,7 @@ function sketch(p5) {
     }
     p5.fill(0, 255, 0, foodFade);
     p5.stroke(0, foodFade);
-    for (j = startingFoodQuantity - eatenFood; j < foodMap.length; j++) {
+    for (j = oldStartingFoodQuantity - eatenFood; j < foodMap.length; j++) {
         p5.ellipse(foodMap[j].x, foodMap[j].y, 5, 5);
       }
 
@@ -191,6 +233,8 @@ function sketch(p5) {
                 paths = JSON.parse(pathsJsonStr);
                 foodMap = JSON.parse(foodJsonStr);
                 genes = JSON.parse(genesJsonStr);
+                oldStartingFoodQuantity = startingFoodQuantity;
+                startingFoodQuantity = foodMap.length;
                 currPoint = [];
                 duration = [];
                 currentFrame = [];
@@ -210,6 +254,7 @@ function sketch(p5) {
         counterBeforeAnimation++;
         if (counterBeforeAnimation === timeBeforeAnimation) {
             eatenFood = 0;
+            oldStartingFoodQuantity = startingFoodQuantity;
         }
     }
 
@@ -274,10 +319,19 @@ function App() {
         .then(response => response.text())
         .then(data => {
           if (data === '') {
-              setStartWarning('Start evolution first');
+              setStartWarning('Pornește mai întâi evoluția');
           }
-          else {
-              setPopulation(data);
+        })
+        .catch(error => console.error('Error:', error));
+
+  };
+
+  const increasefood = () => {
+      fetch('http://localhost:8080/increasefood')
+        .then(response => response.text())
+        .then(data => {
+          if (data === '') {
+              setStartWarning('Pornește mai întâi evoluția');
           }
         })
         .catch(error => console.error('Error:', error));
@@ -309,29 +363,38 @@ function App() {
   if (showSketch === false) {
       return (
           <div>
-              <h2>Simularea selecției naturale</h2>
+              <div>
+                  <h2>Simularea selecției naturale</h2>
 
-              <button onClick={toggleSketch}>Deschide animația</button>
-              <button onClick={toggleEvolution}>Pornește/oprește evoluția</button>
-              <button onClick={reducefood}>Redu cantitatea de hrană</button>
-              <div className="current-genes-div" id="response">{population}</div>
-              <div id="startWarning">{startWarning}</div>
+                  <button onClick={toggleSketch}>Deschide animația</button>
+                  <button onClick={toggleEvolution}>Pornește/oprește evoluția</button>
+                  <button onClick={reducefood}>Redu cantitatea de hrană</button>
+                  <button onClick={increasefood}>Mărește cantitatea de hrană</button>
+                  <div className="current-genes-div" id="response">{population}</div>
+                  <div id="startWarning">{startWarning}</div>
 
+              </div>
+              <div>
+                  <ReactP5Wrapper sketch={genesSketch}/>
+              </div>
           </div>
       );
-  }
-  else {
+  } else {
       return (
           <div>
               <div>
 
-                  <h2>Simularea selecției naturale</h2>
+              <h2>Simularea selecției naturale</h2>
                   <button onClick={toggleSketch}>Închide animația</button>
                   <button onClick={toggleEvolution}>Pornește/oprește evoluția</button>
                   <button onClick={reducefood}>Redu cantitatea de hrană</button>
+                  <button onClick={increasefood}>Mărește cantitatea de hrană</button>
                   <div className="current-genes-div" id="response">{population}</div>
                   <div id="startWarning">{startWarning}</div>
 
+              </div>
+              <div>
+                  <ReactP5Wrapper sketch={genesSketch}/>
               </div>
               <div className="sketch-div">
                   <ReactP5Wrapper sketch={sketch}/>

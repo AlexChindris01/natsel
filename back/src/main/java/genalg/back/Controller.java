@@ -28,6 +28,7 @@ public class Controller {
 	String populationGenesJson = "";
 	String generationDataJson = "";
 	static boolean startedEvolution = false;
+	int nextStartingFoodQuantity = 50;
 	String template = "Populația curentă (vedere, viteză): ";
 	@CrossOrigin(origins = "http://localhost:5173")
 	@GetMapping("/load")
@@ -66,7 +67,7 @@ public class Controller {
 		System.out.println("==== evolving ====");
 		List<Chromosome> populationGenes = new ArrayList<>();
 		Random rand = new Random();
-		int i, j, k, energy = 20, startingFoodQuantity = 50, currentWinner, foodListSize;
+		int i, j, k, energy = 20, startingFoodQuantity = nextStartingFoodQuantity, currentWinner, foodListSize;
         double currentWinningTime;
 		gen = nextGen;
 		stringGen = "";
@@ -146,7 +147,12 @@ public class Controller {
 			}
 			else if (gen[i].foodEaten >= 2) {
 				nextGen[count] = new Animal(gen[i].location.x, gen[i].location.y, gen[i].sight - 0.5 + rand.nextDouble());
-				nextGen[count + 1] = new Animal(gen[i].location.x, gen[i].location.y, gen[i].sight - 0.5 + rand.nextDouble());
+				if (gen[i].location.x + 10 < Animal.MAX_COORD) {
+					nextGen[count + 1] = new Animal(gen[i].location.x + 10, gen[i].location.y, gen[i].sight - 0.5 + rand.nextDouble());
+				}
+				else {
+					nextGen[count + 1] = new Animal(gen[i].location.x - 10, gen[i].location.y, gen[i].sight - 0.5 + rand.nextDouble());
+				}
 				count += 2;
 			}
 		}
@@ -159,16 +165,19 @@ public class Controller {
 	public String reducefood () {
 		if (startedEvolution) {
 			System.out.println("==== reducing amount of available food ====");
-			int i;
-			gen = new Animal[10];
-			stringGen = "";
-			for (i = 0; i < gen.length; i++) {
-				gen[i] = new Animal();
-				stringGen += gen[i].sight + " ";
-				stringGen += gen[i].speed + " | ";
-				// stringGen += gen[i].size + " | ";
-			}
-			return template + stringGen;
+			nextStartingFoodQuantity -= 10;
+			return "reducing amount of available food";
+		}
+		else return "";
+	}
+
+	@CrossOrigin(origins = "http://localhost:5173")
+	@GetMapping("/increasefood")
+	public String increasefood () {
+		if (startedEvolution) {
+			System.out.println("==== increasing amount of available food ====");
+			nextStartingFoodQuantity += 10;
+			return "increasing amount of available food";
 		}
 		else return "";
 	}

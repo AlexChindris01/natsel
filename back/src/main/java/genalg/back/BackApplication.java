@@ -15,6 +15,7 @@ public class BackApplication {
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/evolve-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/reducefood-javaconfig").allowedOrigins("http://localhost:5173");
+				registry.addMapping("/increasefood-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/load-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/getfoodandpaths-javaconfig").allowedOrigins("http://localhost:5173");
 				registry.addMapping("/getfoodmap-javaconfig").allowedOrigins("http://localhost:5173");

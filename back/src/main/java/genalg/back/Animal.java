@@ -181,21 +181,19 @@ class Animal {
                     double ratio = stepRemainder / sight;
                     if (ratio >= 1) {
                         location.copy(chasedFood);
-                        searchPath.add(new TimedLocation(location.x, location.y, sight / speed));
-                        searchPath.add(new TimedLocation(location.x, location.y, 1 - time - sight / speed));
+                        searchPath.add(new TimedLocation(location.x, location.y,
+                                sight / speed));
+                        searchPath.add(new TimedLocation(location.x, location.y,
+                                1 - time - sight / speed));
                         timeReachedFoodLocation = time + sight / speed;
                         contestedFood = new Point(location.x, location.y);
-                        // foodEaten++;
-                        // foodList.remove(chasedFood);
-                        chasedFood = null; // to replace with awarding the food to the first animal that gets to it
-
-                        // to implement: make the food item disappear etc
+                        chasedFood = null;
                     }
                     else {
                         location.x += ratio * (chasedFood.x - location.x);
                         location.y += ratio * (chasedFood.y - location.y);
-                        searchPath.add(new TimedLocation(location.x, location.y, 1 - time));
-                        // System.out.println("added to search path: " + location.x + " " + location.y + " " + time);
+                        searchPath.add(new TimedLocation(location.x, location.y,
+                                1 - time));
                     }
                 }
             }

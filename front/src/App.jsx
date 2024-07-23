@@ -159,18 +159,21 @@ function sketch(p5) {
       }
 
 
-    // Calculate the current position of the dot
+
     for (j = 0; j < paths.length; j++) {
-        if (currPoint[j] + 1 < paths[j].length && counterBeforeAnimation === timeBeforeAnimation) {
-            x = p5.lerp(paths[j][currPoint[j]].x, paths[j][currPoint[j] + 1].x, currentFrame[j] / duration[j]);
-            y = p5.lerp(paths[j][currPoint[j]].y, paths[j][currPoint[j] + 1].y, currentFrame[j] / duration[j]);
+        if (currPoint[j] + 1 < paths[j].length &&
+            counterBeforeAnimation === timeBeforeAnimation) {
+            x = p5.lerp(paths[j][currPoint[j]].x, paths[j][currPoint[j] + 1].x,
+                currentFrame[j] / duration[j]);
+            y = p5.lerp(paths[j][currPoint[j]].y, paths[j][currPoint[j] + 1].y,
+                currentFrame[j] / duration[j]);
         }
         else {
             x = paths[j][currPoint[j]].x;
             y = paths[j][currPoint[j]].y;
         }
         colorFactor = genes[j].sight / 15;
-        colorFactor *= colorFactor * colorFactor * colorFactor * colorFactor;
+        colorFactor = Math.pow(colorFactor, 5);
         fade = 255;
         fadeHelperRatio = 2 * counterBetweenGenerations / timeBetweenGenerations;
         if (animationEnded && ateList[j] === false && fadeHelperRatio < 1) {
@@ -266,7 +269,7 @@ function App() {
   const [population, setPopulation] = useState('');
   const [startWarning, setStartWarning] = useState('');
   const [showSketch, setShowSketch] = useState(false);
-  const [evolution, setEvolution] = useState(false)
+  const [fastEvolution, setFastEvolution] = useState(false)
 
   useEffect(() => {
 
@@ -283,7 +286,7 @@ function App() {
 
   useEffect(() => {
       const interval = setInterval(() => {
-          if (evolution === true) {
+          if (fastEvolution === true) {
           fetch('http://localhost:8080/evolve')
             .then(response => response.text())
             .then(data => {
@@ -298,18 +301,14 @@ function App() {
                 pathsJsonStr = evolveDataStrArr[2];
                 genesJsonStr = evolveDataStrArr[3];
             })
-
             .catch(error => console.error('Error:', error));
-
-
           }
           else {
               setPopulation(populationStr + " current gen: " + currGen);
           }
       }, 1000);
-
       return () => clearInterval(interval);
-  }, [evolution, startWarning])
+  }, [fastEvolution, startWarning])
 
 
 
@@ -350,13 +349,13 @@ function App() {
       }
   }
 
-  const toggleEvolution = () => {
-      if (evolution === false) {
-          setEvolution(true);
+  const toggleFastEvolution = () => {
+      if (fastEvolution === false) {
+          setFastEvolution(true);
           // evolve();
       }
       else {
-          setEvolution(false);
+          setFastEvolution(false);
       }
   }
 
@@ -367,7 +366,7 @@ function App() {
                   <h2>Simularea selecției naturale</h2>
 
                   <button onClick={toggleSketch}>Deschide animația</button>
-                  <button onClick={toggleEvolution}>Pornește/oprește evoluția</button>
+                  <button onClick={toggleFastEvolution}>Pornește/oprește evoluția</button>
                   <button onClick={reducefood}>Redu cantitatea de hrană</button>
                   <button onClick={increasefood}>Mărește cantitatea de hrană</button>
                   <div className="current-genes-div" id="response">{population}</div>
@@ -386,7 +385,7 @@ function App() {
 
               <h2>Simularea selecției naturale</h2>
                   <button onClick={toggleSketch}>Închide animația</button>
-                  <button onClick={toggleEvolution}>Pornește/oprește evoluția</button>
+                  <button onClick={toggleFastEvolution}>Pornește/oprește evoluția</button>
                   <button onClick={reducefood}>Redu cantitatea de hrană</button>
                   <button onClick={increasefood}>Mărește cantitatea de hrană</button>
                   <div className="current-genes-div" id="response">{population}</div>

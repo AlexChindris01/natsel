@@ -40,10 +40,9 @@ public class Controller {
 			nextGen[i] = new Animal();
 			stringGen += nextGen[i].sight + " ";
 			stringGen += nextGen[i].speed + " | ";
-			// stringGen += gen[i].size + " | ";
 		}
 		Animal.foodList = new ArrayList<Point>();
-		return template + stringGen;
+		return template + stringGen + ";" + nextGen.length;
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")
@@ -76,7 +75,6 @@ public class Controller {
 			populationGenes.add(new Chromosome(gen[i].sight, gen[i].speed, false));
 			stringGen += String.format("%.2f", gen[i].sight) + ", ";
 			stringGen += String.format("%.2f", gen[i].speed) + " | ";
-			// stringGen += gen[i].size + " | ";
 		}
 
 
@@ -157,7 +155,7 @@ public class Controller {
 			}
 		}
 
-		return template + stringGen + ";" + generationDataJson;
+		return template + stringGen + ";" + generationDataJson + ";" + gen.length;
 	}
 
 	@CrossOrigin(origins = "http://localhost:5173")

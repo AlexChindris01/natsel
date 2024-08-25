@@ -16,7 +16,9 @@ var populationStr;
 // var foodFetchCount = 0;
 // var foodAndPathsJsonStr;
 var evolveDataStrArr;
-var currGen = 0;
+var dataArr;
+var currGen = 1;
+var populationSize;
 
 const evolve = () => {
       fetch('http://localhost:8080/evolve')
@@ -28,6 +30,7 @@ const evolve = () => {
             foodJsonStr = evolveDataStrArr[1];
             pathsJsonStr = evolveDataStrArr[2];
             genesJsonStr = evolveDataStrArr[3];
+            populationSize = evolveDataStrArr[4];
         })
 
         .catch(error => console.error('Error:', error));
@@ -269,7 +272,8 @@ function App() {
   const [population, setPopulation] = useState('');
   const [startWarning, setStartWarning] = useState('');
   const [showSketch, setShowSketch] = useState(false);
-  const [fastEvolution, setFastEvolution] = useState(false)
+  const [fastEvolution, setFastEvolution] = useState(false);
+  const [startingFoodQuantity, setStartingFoodQuantity] = useState(50);
 
   useEffect(() => {
 
@@ -277,8 +281,11 @@ function App() {
       fetch('http://localhost:8080/load')
     .then(response => response.text())
     .then(data => {
-        setPopulation(data);
-        populationStr = data;
+        dataArr = data.split(";");
+        setPopulation(dataArr[0]);
+        populationStr = dataArr[0];
+        populationSize = dataArr[1];
+
     })
     .catch(error => console.error('Error:', error));
 
@@ -292,7 +299,9 @@ function App() {
             .then(data => {
                 evolveDataStrArr = data.split(';');
                 currGen++;
-                setPopulation(evolveDataStrArr[0] + " current gen: " + currGen);
+                populationSize = evolveDataStrArr[4];
+                setPopulation(evolveDataStrArr[0] + " generația nr. " +
+                    currGen + "; dimensiunea populației: " + populationSize);
                 if (startWarning !== '') {
                     setStartWarning('');
                 }
@@ -304,7 +313,8 @@ function App() {
             .catch(error => console.error('Error:', error));
           }
           else {
-              setPopulation(populationStr + " current gen: " + currGen);
+              setPopulation(populationStr + " generația nr. " + currGen + "; dimensiunea populației: " +
+                  populationSize);
           }
       }, 1000);
       return () => clearInterval(interval);
@@ -320,6 +330,9 @@ function App() {
           if (data === '') {
               setStartWarning('Pornește mai întâi evoluția');
           }
+          else {
+              setStartingFoodQuantity(startingFoodQuantity - 10);
+          }
         })
         .catch(error => console.error('Error:', error));
 
@@ -331,6 +344,9 @@ function App() {
         .then(data => {
           if (data === '') {
               setStartWarning('Pornește mai întâi evoluția');
+          }
+          else {
+              setStartingFoodQuantity(startingFoodQuantity + 10);
           }
         })
         .catch(error => console.error('Error:', error));
@@ -370,6 +386,7 @@ function App() {
                   <button onClick={reducefood}>Redu cantitatea de hrană</button>
                   <button onClick={increasefood}>Mărește cantitatea de hrană</button>
                   <div className="current-genes-div" id="response">{population}</div>
+                  <div id="startingFoodQuantity">Cantitatea de hrană disponibilă: {startingFoodQuantity}</div>
                   <div id="startWarning">{startWarning}</div>
 
               </div>
@@ -383,12 +400,13 @@ function App() {
           <div>
               <div>
 
-              <h2>Simularea selecției naturale</h2>
+                  <h2>Simularea selecției naturale</h2>
                   <button onClick={toggleSketch}>Închide animația</button>
                   <button onClick={toggleFastEvolution}>Pornește/oprește evoluția</button>
                   <button onClick={reducefood}>Redu cantitatea de hrană</button>
                   <button onClick={increasefood}>Mărește cantitatea de hrană</button>
                   <div className="current-genes-div" id="response">{population}</div>
+                  <div id="startingFoodQuantity">Cantitatea de hrană disponibilă: {startingFoodQuantity}</div>
                   <div id="startWarning">{startWarning}</div>
 
               </div>
